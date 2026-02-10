@@ -1,3 +1,5 @@
+"use client";
+
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -6,7 +8,7 @@ import {
   CardHeader,
   CardTitle
 } from "@/components/ui/card";
-import { auth, clerkClient } from "@clerk/nextjs/server";
+import { useOrganization } from "@clerk/nextjs";
 
 const stats = [
   { label: "Properties", value: "24", delta: "+4" },
@@ -32,11 +34,8 @@ const activity = [
   }
 ];
 
-export default async function DashboardPage() {
-  const { orgId } = auth();
-  const organization = orgId
-    ? await clerkClient.organizations.getOrganization({ organizationId: orgId })
-    : null;
+export default function DashboardPage() {
+  const { organization, isLoaded } = useOrganization();
 
   return (
     <div className="flex flex-col gap-6">
@@ -49,12 +48,12 @@ export default async function DashboardPage() {
         <CardHeader className="pb-2">
           <CardDescription>Active organization</CardDescription>
           <CardTitle className="text-2xl">
-            {organization?.name ?? "No active organization"}
+            {!isLoaded ? "Loading organization..." : organization?.name ?? "No active organization"}
           </CardTitle>
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground">
           <span className="font-medium text-foreground">Org ID:</span>{" "}
-          {organization?.id ?? "Not available"}
+          {!isLoaded ? "Loading..." : organization?.id ?? "Not available"}
         </CardContent>
       </Card>
 

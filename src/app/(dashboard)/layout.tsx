@@ -3,12 +3,12 @@ import { SidebarNav } from "@/components/dashboard/sidebar-nav";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children
 }: {
   children: React.ReactNode;
 }) {
-  const { orgId } = auth();
+  const { orgId } = await auth();
 
   if (!orgId) {
     redirect("/select-org");

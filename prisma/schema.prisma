@@ -1,0 +1,103 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum MembershipRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum PropertyStatus {
+  OK
+  DEGRADED
+  DOWN
+}
+
+enum SubscriptionPlan {
+  FREE
+  STARTER
+  PRO
+  BUSINESS
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+}
+
+model Organization {
+  id            String        @id
+  name          String
+  memberships   Membership[]
+  properties    Property[]
+  subscription  Subscription?
+  entitlement   Entitlement?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model User {
+  id            String        @id
+  email         String
+  name          String?
+  memberships   Membership[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Membership {
+  id            String          @id @default(cuid())
+  orgId         String
+  userId        String
+  role          MembershipRole
+  organization  Organization    @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@unique([orgId, userId])
+}
+
+model Property {
+  id            String         @id @default(cuid())
+  orgId         String
+  name          String
+  domain        String
+  status        PropertyStatus @default(OK)
+  organization  Organization   @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@unique([orgId, domain])
+  @@index([orgId])
+}
+
+model Subscription {
+  id                    String             @id @default(cuid())
+  orgId                 String             @unique
+  plan                  SubscriptionPlan   @default(FREE)
+  stripeCustomerId      String?
+  stripeSubscriptionId  String?
+  status                SubscriptionStatus @default(ACTIVE)
+  currentPeriodEnd      DateTime?
+  organization          Organization       @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+}
+
+model Entitlement {
+  id            String       @id @default(cuid())
+  orgId         String       @unique
+  maxProperties Int          @default(1)
+  features      Json         @default("{}")
+  organization  Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
