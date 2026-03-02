@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 
+import { ToolsDialog } from "@/components/properties/tools-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -58,6 +59,9 @@ export default function PropertiesPage() {
   const [open, setOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [resolvingIp, setResolvingIp] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const [toolsPropertyId, setToolsPropertyId] = useState<string | null>(null);
+  const [toolsPropertyDomain, setToolsPropertyDomain] = useState<string | null>(null);
 
   const [domain, setDomain] = useState("");
   const [domainAliasesInput, setDomainAliasesInput] = useState("");
@@ -196,6 +200,12 @@ export default function PropertiesPage() {
     await loadProperties();
   };
 
+  const openToolsDialog = (property: Property) => {
+    setToolsPropertyId(property.id);
+    setToolsPropertyDomain(property.domain);
+    setToolsOpen(true);
+  };
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -329,9 +339,18 @@ export default function PropertiesPage() {
                     <TableCell>{property.hostingProvider ?? "-"}</TableCell>
                     <TableCell>{new Date(property.createdAt).toLocaleDateString()}</TableCell>
                     <TableCell className="text-right">
-                      <Button variant="outline" size="sm" onClick={() => void onDelete(property.id)}>
-                        Delete
-                      </Button>
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openToolsDialog(property)}
+                        >
+                          Tools
+                        </Button>
+                        <Button variant="outline" size="sm" onClick={() => void onDelete(property.id)}>
+                          Delete
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -342,6 +361,13 @@ export default function PropertiesPage() {
           )}
         </CardContent>
       </Card>
+
+      <ToolsDialog
+        onOpenChange={setToolsOpen}
+        open={toolsOpen}
+        propertyDomain={toolsPropertyDomain}
+        propertyId={toolsPropertyId}
+      />
     </div>
   );
 }

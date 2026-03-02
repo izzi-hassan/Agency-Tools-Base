@@ -67,8 +67,33 @@ export async function ensureTenant({ orgId, userId }: EnsureTenantInput): Promis
 
     await client.query(
       `
-      INSERT INTO entitlements (org_id, max_properties)
-      VALUES ($1, 1)
+      UPDATE subscriptions
+      SET subscription_type_id = (
+        SELECT id
+        FROM subscription_types
+        WHERE name = 'Free' AND is_active = TRUE
+        LIMIT 1
+      )
+      WHERE org_id = $1
+        AND subscription_type_id IS NULL
+      `,
+      [orgId]
+    );
+
+    await client.query(
+      `
+      INSERT INTO entitlements (org_id, max_properties, tools_enabled)
+      VALUES (
+        $1,
+        COALESCE(
+          (SELECT max_properties FROM subscription_types WHERE name = 'Free' LIMIT 1),
+          1
+        ),
+        COALESCE(
+          (SELECT tools_included FROM subscription_types WHERE name = 'Free' LIMIT 1),
+          '{}'
+        )
+      )
       ON CONFLICT (org_id)
       DO NOTHING
       `,
