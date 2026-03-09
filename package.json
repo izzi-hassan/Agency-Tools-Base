@@ -5,6 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
+    "dev:test": "./scripts/dev-with-stripe.sh",
+    "stripe": "./tools/stripe-cli/stripe",
+    "stripe:login": "./tools/stripe-cli/stripe login",
+    "stripe:listen": "./tools/stripe-cli/stripe listen --events checkout.session.completed,customer.subscription.updated,customer.subscription.deleted --forward-to http://localhost:3000/api/webhooks/stripe",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
