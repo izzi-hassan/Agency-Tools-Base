@@ -1,4 +1,6 @@
-# Webtools Dashboard
+# Agency Tools Base Dashboard
+
+A base framework for building and launching SAAS products relating to web agency processes.
 
 ## Auth Setup (Clerk)
 
